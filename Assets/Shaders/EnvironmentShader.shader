@@ -7,6 +7,8 @@ Shader "Custom/EnvironmentShader"
         _NormalMap("Normal Map", 2D) = "white"{}
         _NormalSlider ("Bump Amount", Range(0,5)) = 1
         _Metallic ("Metallic", Range(0,1)) = 0.0
+        _DitherMask("Dither Mask", 2D) = "white" {}
+
     }
     SubShader
     {
@@ -18,7 +20,7 @@ Shader "Custom/EnvironmentShader"
 
         sampler2D _MainTex;
         sampler2D _Bump;
-
+        sampler2D _DitherMask;
         half _NormalSlider;
         struct Input
         {
@@ -34,6 +36,10 @@ Shader "Custom/EnvironmentShader"
         {
             // Albedo comes from a texture tinted by color
             fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
+
+            
+
+
             o.Albedo = c.rgb;
             o.Normal = UnpackNormal(tex2D(_Bump, IN.uv_Bump));
             o.Normal *= float3(_NormalSlider,_NormalSlider,1);

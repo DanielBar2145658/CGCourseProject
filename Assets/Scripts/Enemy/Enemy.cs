@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Enemy : MonoBehaviour, IDamagable
+public class Enemy : MonoBehaviour
 {
     [SerializeField]
     float maxHealth;
@@ -23,7 +23,7 @@ public class Enemy : MonoBehaviour, IDamagable
         
     }
 
-    public void Damage(float amount, Vector3 force)
+    public void Damage(float amount)
     {
         _currentHealth -= amount;
 
@@ -34,9 +34,18 @@ public class Enemy : MonoBehaviour, IDamagable
 
     }
 
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Hitbox"))
+            Damage(5);
+    }
+
+
     [ContextMenu("Die")]
     public void Die()
     {
+        Gamemanager.Instance.ToggleWinScreen(true);
         Destroy(this.gameObject);
     }
 

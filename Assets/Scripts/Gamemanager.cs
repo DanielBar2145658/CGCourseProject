@@ -29,7 +29,12 @@ public class Gamemanager : MonoBehaviour
     
     
     }
+    public void ToggleWinScreen(bool c)
+    {
+        UIManager.WinScreenUI(c);
 
+
+    }
 
 
 

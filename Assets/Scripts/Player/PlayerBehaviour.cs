@@ -9,9 +9,12 @@ public class PlayerBehaviour : MonoBehaviour, IDamagable
     public Transform player;
     public GameObject model;
 
+    public GameObject Muzzle;
 
+    bool canShoot = true;
 
-
+    [SerializeField]
+    bool lockMouse = true;
 
     public float speed;
 
@@ -36,14 +39,27 @@ public class PlayerBehaviour : MonoBehaviour, IDamagable
 
         rb = GetComponent<Rigidbody>();
         inputActions.Movement.Enable();
+
+        inputActions.Movement.GunAttack.performed += GunAttack_performed;
+    }
+
+    private void GunAttack_performed(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
+    {
+        Debug.Log("WE");
+        if(canShoot == true)
+            StartCoroutine(Shoot());
     }
 
     // Start is called before the first frame update
     void Start()
     {
         _currentHealth = MaxHealth;
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        if (lockMouse == true) 
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+
     }
 
     // Update is called once per frame
@@ -59,7 +75,15 @@ public class PlayerBehaviour : MonoBehaviour, IDamagable
     
     }
 
-
+    IEnumerator Shoot() 
+    {
+        canShoot = false;
+        Muzzle.SetActive(true);
+        yield return new WaitForSeconds(0.2f);
+        Muzzle.SetActive(false);
+        canShoot = true;
+    
+    }
     void LookDir(Vector2 inputDirection) 
     {
         Vector3 viewDir = player.position - new Vector3(transform.position.x, player.position.y, transform.position.z);

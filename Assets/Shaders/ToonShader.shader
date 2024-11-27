@@ -18,7 +18,7 @@ Shader "Custom/ToonShader"
         _RimOffset ("Rim Offset", Range(0.0,1.0)) = 0.5
 
 
-
+        _Outline ("Outline Width", Range(.002, 0.1)) = .005
 
 
         //Halftone
@@ -29,17 +29,21 @@ Shader "Custom/ToonShader"
         Tags { "RenderType"="Opaque" }
         LOD 100
 
+
+
         
 
         
         CGPROGRAM
         #pragma surface surf ToonRamp
+        
 
         sampler2D _MainTex;
         float4 _Color;
         
         sampler2D _RampText;
 
+        sampler2D _DitherMask;
 
         float4 _RimColor;
         float _RimPower;
@@ -57,12 +61,12 @@ Shader "Custom/ToonShader"
 
             
             
-            
+            float dither = tex2D(_DitherMask, rh).rgb;
             
             float3 ramp = tex2D(_RampText, rh).rgb ;
 
             float4 c;
-            c.rgb = s.Albedo *( h * ramp * cs);
+            c.rgb = s.Albedo *( h * ramp * cs) * dither;
             c.a = s.Alpha;
             return c;
 
