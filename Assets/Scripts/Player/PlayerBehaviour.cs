@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,6 +9,11 @@ public class PlayerBehaviour : MonoBehaviour, IDamagable
     public Transform orientaion;
     public Transform player;
     public GameObject model;
+
+    public GameObject HeavyAttack;
+
+    [SerializeField]
+    GameObject[] MuzzleFlashes;
 
     public GameObject Muzzle;
 
@@ -23,6 +29,8 @@ public class PlayerBehaviour : MonoBehaviour, IDamagable
     [SerializeField]
     float MaxHealth;
 
+    
+    public LayerMask mask;
 
     Vector2 direction;
 
@@ -32,6 +40,10 @@ public class PlayerBehaviour : MonoBehaviour, IDamagable
 
     PlayerActionMap inputActions;
 
+    string c = "";
+
+    float timeout = 0.5f;
+    private bool isgrounded;
 
     private void Awake()
     {
@@ -41,20 +53,30 @@ public class PlayerBehaviour : MonoBehaviour, IDamagable
         inputActions.Movement.Enable();
 
         inputActions.Movement.GunAttack.performed += GunAttack_performed;
+        inputActions.Movement.Jump.performed += Jump_performed;
+    }
+
+    private void Jump_performed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+    {
+        Debug.Log("Real and true");
+        if (isgrounded == true)
+            rb.AddForce(transform.up * 5, ForceMode.Impulse);
     }
 
     private void GunAttack_performed(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
     {
-        Debug.Log("WE");
-        if(canShoot == true)
+        c += "G";
+        if (canShoot == true)
             StartCoroutine(Shoot());
     }
+
+
 
     // Start is called before the first frame update
     void Start()
     {
         _currentHealth = MaxHealth;
-        if (lockMouse == true) 
+        if (lockMouse == true)
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
@@ -67,11 +89,67 @@ public class PlayerBehaviour : MonoBehaviour, IDamagable
     {
         direction = inputActions.Movement.Move.ReadValue<Vector2>();
         LookDir(direction);
+
+        CheckCombo();
+        if (CheckCombo() == true)
+        {
+            StartCoroutine(Timeout());
+            if (c == "GGG")
+            {
+
+                StartCoroutine(HeavyAttackAtk());
+
+            }
+        }
+    }
+    IEnumerator HeavyAttackAtk()
+    {
+        HeavyAttack.SetActive(true);
+
+        for (int i = 0; i < 5; i++)
+        {
+            int a = UnityEngine.Random.Range(0, MuzzleFlashes.Length);
+            MuzzleFlashes[a].SetActive(true);
+            yield return new WaitForSeconds(0.5f);
+            HeavyAttack.SetActive(false);
+        }
+
+
+
+
+        HeavyAttack.SetActive(false);
+
+    }
+    private IEnumerator Timeout()
+    {
+        yield return new WaitForSeconds(timeout);
+        c = "";
+
+    }
+
+    
+    private bool CheckCombo()
+    {
+        if (c != "") 
+            return true;
+        
+        
+        return false;
     }
 
     void FixedUpdate() 
     {
         rb.AddForce(new Vector3(direction.y * -speed, 0, direction.x * speed), ForceMode.Force);
+
+        RaycastHit hit;
+
+        if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.down), out hit, 3f, mask))
+        {
+            isgrounded = true;
+            Debug.Log("ground");
+        }
+        else
+            isgrounded = false;
     
     }
 
